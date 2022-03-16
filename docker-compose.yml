@@ -1,0 +1,60 @@
+version: '2'
+
+services:
+
+  postgres:
+    image: postgres:14-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: yii2basic
+#    ports:
+#      - '5432:5432'
+
+  vol_app_source:
+    image: tianon/true
+    volumes:
+      - ./:/app
+
+  php-fpm:
+    build:
+      context: ./docker/php-fpm
+    expose:
+      - 9000
+    volumes_from:
+      - vol_app_source
+    depends_on:
+      - postgres
+
+  workspace:
+    build:
+      context: ./docker/workspace
+    volumes_from:
+      - vol_app_source
+    depends_on:
+      - postgres
+
+  yii:
+    build:
+      context: ./docker/workspace
+    volumes_from:
+      - vol_app_source
+    depends_on:
+      - postgres
+    entrypoint: ["php", "yii"]
+    working_dir: /app
+
+  nginx-app:
+    build:
+      context: ./docker/nginx-app
+    depends_on:
+      - php-fpm
+    volumes_from:
+      - vol_app_source
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
