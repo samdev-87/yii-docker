@@ -24,7 +24,7 @@ RUN apt-get install -y \
             libz-dev \
             nano \
             cron
-#            postgresql-client-14
+#            postgresql-client-11
 
 RUN docker-php-ext-configure gd \
     --with-webp=/usr/include/ \
@@ -44,9 +44,13 @@ RUN docker-php-ext-install zip
 RUN docker-php-ext-configure intl
 RUN docker-php-ext-install intl
 
+RUN docker-php-ext-install pdo
 RUN docker-php-ext-install pdo_pgsql
+RUN docker-php-ext-install pgsql
 RUN docker-php-ext-install exif
 RUN docker-php-ext-install fileinfo
+
+RUN pecl install xdebug
 
 RUN curl --silent --show-error https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 

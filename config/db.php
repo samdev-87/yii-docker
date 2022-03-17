@@ -3,7 +3,7 @@
 return [
     'class' => 'yii\db\Connection',
     'dsn' => 'pgsql:host=localhost;port=5432;dbname=yii2basic',
-    'username' => 'root',
+    'username' => 'yii2basic',
     'password' => 'secret',
     'charset' => 'utf8',
     'schemaMap' => [
