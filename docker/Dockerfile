@@ -1,4 +1,4 @@
-FROM php:7.4-fpm-buster
+FROM php:7.4.28-fpm-buster
 
 RUN apt-get update
 RUN apt-get install -y \
@@ -24,7 +24,6 @@ RUN apt-get install -y \
             libz-dev \
             nano \
             cron
-#            postgresql-client-11
 
 RUN docker-php-ext-configure gd \
     --with-webp=/usr/include/ \
@@ -38,19 +37,19 @@ RUN docker-php-ext-configure imap \
 RUN docker-php-ext-install imap
 
 RUN docker-php-ext-configure zip
-
 RUN docker-php-ext-install zip
 
 RUN docker-php-ext-configure intl
 RUN docker-php-ext-install intl
 
-RUN docker-php-ext-install pdo
-RUN docker-php-ext-install pdo_pgsql
-RUN docker-php-ext-install pgsql
+RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql
+RUN docker-php-ext-install pdo pgsql pdo_pgsql
 RUN docker-php-ext-install exif
 RUN docker-php-ext-install fileinfo
 
-RUN pecl install xdebug
+RUN ln -s /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
+RUN sed -i -e 's/;extension=pgsql/extension=pgsql/' /usr/local/etc/php/php.ini
+RUN sed -i -e 's/;extension=pdo_pgsql/extension=pdo_pgsql/' /usr/local/etc/php/php.ini
 
 RUN curl --silent --show-error https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -64,4 +63,21 @@ RUN apt-get -y autoremove \
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
+# Copy existing app directory
+COPY . /app
 WORKDIR /app
+
+# Configure non-root user.
+ARG PUID=1000
+ENV PUID ${PUID}
+ARG PGID=1000
+ENV PGID ${PGID}
+
+RUN groupmod -o -g ${PGID} www-data && \
+    usermod -o -u ${PUID} -g www-data www-data
+
+RUN chown -R www-data:www-data /var/www
+
+EXPOSE 8000
+
+CMD ["php-fpm"]
