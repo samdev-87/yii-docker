@@ -47,10 +47,6 @@ RUN docker-php-ext-install pdo pgsql pdo_pgsql
 RUN docker-php-ext-install exif
 RUN docker-php-ext-install fileinfo
 
-RUN ln -s /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
-RUN sed -i -e 's/;extension=pgsql/extension=pgsql/' /usr/local/etc/php/php.ini
-RUN sed -i -e 's/;extension=pdo_pgsql/extension=pdo_pgsql/' /usr/local/etc/php/php.ini
-
 RUN curl --silent --show-error https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 RUN pecl install memcached

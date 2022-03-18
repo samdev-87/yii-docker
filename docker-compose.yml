@@ -7,11 +7,9 @@ services:
     volumes:
       - ./:/app
 #    command: "true"
-    networks:
-      app-network:
 
   db:
-    image: postgres:latest
+    image: postgres:14
     container_name: db
     restart: always
     volumes:
@@ -23,8 +21,10 @@ services:
       POSTGRES_USER: yii2basic
       POSTGRES_DB: yii2basic
 #      POSTGRES_HOST_AUTH_METHOD: "true"
+    ports:
+      - "5432:5432"
     networks:
-      app-network:
+      default:
         # Our application can communicate with the database using this hostname
         aliases:
           - postgresdb
@@ -43,8 +43,6 @@ services:
       - db
       - redis
     working_dir: /app
-    networks:
-      app-network:
 
   webserver:
     image: nginx:stable
@@ -59,16 +57,22 @@ services:
       - ./docker/app.conf:/etc/nginx/conf.d/defaul.conf
     links:
       - php
-    networks:
-      app-network:
 
   redis:
     image: redis:latest
+    container_name: redis
     expose:
       - 6379
 
-networks:
-  app-network:
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: kalauov.s.t@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: pwpwpwpw1
+    ports:
+      - "5433:80"
 
 volumes:
   postgres_data:
